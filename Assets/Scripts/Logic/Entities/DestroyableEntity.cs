@@ -1,22 +1,23 @@
 ﻿namespace WhaleAppTapGame.Logic.Entities
 {
-    public class DestroyableEntity
+    public class DestroyableEntity : iDestroyableEntity
     {
-        public event System.Action<DestroyableEntity> OnEntityDestroyed;
+        public event System.Action<iDestroyableEntity> OnEntityDestroyed;
 
-        private int m_CurrentHP;
-        private int m_MaxHP;
+        public int CurrentHP { get; private set; }
+        public int MaxHP { get; private set; }
+
 
         public DestroyableEntity(int hp)
         {
-            m_CurrentHP = m_MaxHP = hp;
+            CurrentHP = MaxHP = hp;
         }
 
-        public void TakeDamage()
+        public void TakeDamage(int damage)
         {
-            m_CurrentHP--;
+            CurrentHP -= damage;
 
-            if (m_CurrentHP <= 0)
+            if (CurrentHP <= 0)
                 OnEntityDestroyed?.Invoke(this);
         }
     }
