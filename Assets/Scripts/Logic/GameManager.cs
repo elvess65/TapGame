@@ -24,6 +24,13 @@ namespace WhaleAppTapGame.Logic
         private bool m_IsActive = false;
         private Vector2 m_ScreenBounds;
 
+        //TODO:
+        //Factory for units
+        //Gameover on destroy friendly unit
+        //Tap on units input
+        //UI player HP
+        //UI gameover
+        //UI play
 
         void Awake()
         {
