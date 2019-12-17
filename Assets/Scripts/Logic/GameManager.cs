@@ -69,7 +69,7 @@ namespace WhaleAppTapGame.Logic
 
         void CreatePlayer()
         {
-            m_PlayerEntity = new DestroyableEntity(3);
+            m_PlayerEntity = new DestroyableEntity(3, 1);
             m_PlayerEntity.OnEntityDestroyed += PlayerEntity_EntityDestroyedHandler;
         }
 
@@ -85,15 +85,10 @@ namespace WhaleAppTapGame.Logic
         }
 
 
-        void InputManager_InputExecutedHandler()
-        {
-            //m_UnitViews[0].TakeDamage();
-        }
-
         void UnitSpawnTimer_UnitShouldBeSpawnedHandler()
         {
             //Create data
-            iDestroyableEntity entity = new DestroyableEntity(1);
+            iDestroyableEntity entity = new DestroyableEntity(1, 1);
 
             //Create view
             UnitView view = Instantiate(PrefabsLibrary.UnitViewPrefab) as UnitView;
@@ -127,18 +122,24 @@ namespace WhaleAppTapGame.Logic
             RemoveUnitView(unitView);
         }
 
-        void UnitView_UnitOutOfBottomBoundHandler(UnitView unitView) => m_PlayerEntity.TakeDamage(unitView.DealDamage());
-
-        void PlayerEntity_EntityDestroyedHandler(iDestroyableEntity entity)
-        {
-            m_IsActive = false;
-            Debug.Log("Game over");
-        }
+        void UnitView_UnitOutOfBottomBoundHandler(UnitView unitView) => m_PlayerEntity.TakeDamage(unitView.Damage);
 
         void RemoveUnitView(UnitView unitView)
         {
             m_UnitViews.Remove(unitView);
             Destroy(unitView.gameObject);
+        }
+
+
+        void InputManager_InputExecutedHandler()
+        {
+            m_UnitViews[0].TakeDamage(m_PlayerEntity.Damage);
+        }
+
+        void PlayerEntity_EntityDestroyedHandler(iDestroyableEntity entity)
+        {
+            m_IsActive = false;
+            Debug.Log("Game over");
         }
     }
 }

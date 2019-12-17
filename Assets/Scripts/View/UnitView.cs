@@ -17,6 +17,7 @@ namespace WhaleAppTapGame.Logic.View
 
         public float SpriteHalfWidth => MainSpriteRenderer.bounds.size.x / 2;
         public float SpriteHalfHeight => MainSpriteRenderer.bounds.size.y / 2;
+        public int Damage => m_Entity.Damage;
 
 
         public void Init(iDestroyableEntity entity, iMoveStrategy moveStrategy)
@@ -32,8 +33,6 @@ namespace WhaleAppTapGame.Logic.View
 
         
         public void TakeDamage(int damage) => m_Entity.TakeDamage(damage);
-
-        public int DealDamage() => 1;
 
         public void Move() => m_MoveStrategy?.Move();
     }

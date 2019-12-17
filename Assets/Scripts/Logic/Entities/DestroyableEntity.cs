@@ -6,11 +6,13 @@
 
         public int CurrentHP { get; private set; }
         public int MaxHP { get; private set; }
+        public int Damage { get; private set; }
 
 
-        public DestroyableEntity(int hp)
+        public DestroyableEntity(int hp, int damage)
         {
             CurrentHP = MaxHP = hp;
+            Damage = damage;
         }
 
         public void TakeDamage(int damage)
