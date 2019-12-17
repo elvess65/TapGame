@@ -69,7 +69,7 @@ namespace WhaleAppTapGame.Logic
 
         void CreatePlayer()
         {
-            m_PlayerEntity = new DestroyableEntity(3, 1);
+            m_PlayerEntity = new DestroyableEntity(3, 1, Color.white);
             m_PlayerEntity.OnEntityDestroyed += PlayerEntity_EntityDestroyedHandler;
         }
 
@@ -87,8 +87,10 @@ namespace WhaleAppTapGame.Logic
 
         void UnitSpawnTimer_UnitShouldBeSpawnedHandler()
         {
-            //Create data
-            iDestroyableEntity entity = new DestroyableEntity(1, 1);
+            //Create entity
+            iDestroyableEntity enemyEntity = new DestroyableEntity(1, 1, Color.red);
+            iDestroyableEntity frindlyEntity = new FriendlyEntity(1, Color.green);
+            iDestroyableEntity entity = Random.Range(0, 100) > 50 ? enemyEntity : frindlyEntity;
 
             //Create view
             UnitView view = Instantiate(PrefabsLibrary.UnitViewPrefab) as UnitView;
@@ -99,19 +101,21 @@ namespace WhaleAppTapGame.Logic
             float spawnPosY = m_ScreenBounds.y + view.SpriteHalfHeight;
 
             view.transform.position = new Vector3(spawnPosX, spawnPosY, 0);
-            view.OnUnitDestroyed += UnitView_UnitDestroyedHandler;
-            view.OnUnitOutOfBottomBound += UnitView_UnitOutOfBottomBoundHandler;
 
+            //Create movement
             Vector2 viewSpriteBounds = new Vector2(view.SpriteHalfWidth, view.SpriteHalfHeight);
-            iMoveStrategy simpleMoveStrategy = new SimpleMoveStrategy(view.transform, Random.Range(0.7f, 1.5f), m_ScreenBounds, viewSpriteBounds);
-            iMoveStrategy diagonalMoveStrategy = new DiagonalMoveStrategy(view.transform, Random.Range(0.7f, 1.5f), m_ScreenBounds, viewSpriteBounds);
+            float randomSpeed = Random.Range(0.7f, 1.5f);
+            iMoveStrategy simpleMoveStrategy = new SimpleMoveStrategy(view.transform, randomSpeed, m_ScreenBounds, viewSpriteBounds);
+            iMoveStrategy diagonalMoveStrategy = new DiagonalMoveStrategy(view.transform, randomSpeed, m_ScreenBounds, viewSpriteBounds);
             iMoveStrategy randomMoveStrategy = Random.Range(0, 100) >= 50 ? simpleMoveStrategy : diagonalMoveStrategy;
-                                                                            
-            view.Init(entity, randomMoveStrategy);
 
+            //Initialize view
+            view.OnUnitOutOfBottomBound += UnitView_UnitOutOfBottomBoundHandler;
+            view.OnUnitDestroyed += UnitView_UnitDestroyedHandler;
+            view.Init(entity, randomMoveStrategy);
+            
             //Add view to processing
             m_UnitViews.Add(view);
-
         }
 
         void UnitView_UnitDestroyedHandler(UnitView unitView)

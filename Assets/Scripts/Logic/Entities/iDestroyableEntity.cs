@@ -1,4 +1,6 @@
-﻿namespace WhaleAppTapGame.Logic.Entities
+﻿using UnityEngine;
+
+namespace WhaleAppTapGame.Logic.Entities
 {
     //TODO renamge iUnitEntity
     public interface iDestroyableEntity
@@ -8,6 +10,7 @@
         int CurrentHP { get; }
         int MaxHP { get; }
         int Damage { get; }
+        Color HightlightColor { get; }
 
         void TakeDamage(int damage);
     }

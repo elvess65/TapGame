@@ -25,6 +25,7 @@ namespace WhaleAppTapGame.Logic.View
             //Entity
             m_Entity = entity;
             m_Entity.OnEntityDestroyed += (iDestroyableEntity sender) => OnUnitDestroyed?.Invoke(this);
+            HightlightSpriteRenderer.color = m_Entity.HightlightColor;
 
             //Move strategy
             m_MoveStrategy = moveStrategy;
