@@ -12,7 +12,7 @@ namespace WhaleAppTapGame.Logic.View
         public SpriteRenderer MainSpriteRenderer;
         public SpriteRenderer HightlightSpriteRenderer;
 
-        private iDestroyableEntity m_Entity;
+        private iUnitEntity m_Entity;
         private iMoveStrategy m_MoveStrategy;
 
         public float SpriteHalfWidth => MainSpriteRenderer.bounds.size.x / 2;
@@ -20,11 +20,11 @@ namespace WhaleAppTapGame.Logic.View
         public int Damage => m_Entity.Damage;
 
 
-        public void Init(iDestroyableEntity entity, iMoveStrategy moveStrategy)
+        public void Init(iUnitEntity entity, iMoveStrategy moveStrategy)
         {
             //Entity
             m_Entity = entity;
-            m_Entity.OnEntityDestroyed += (iDestroyableEntity sender) => OnUnitDestroyed?.Invoke(this);
+            m_Entity.OnEntityDestroyed += (iUnitEntity sender) => OnUnitDestroyed?.Invoke(this);
             HightlightSpriteRenderer.color = m_Entity.HightlightColor;
 
             //Move strategy

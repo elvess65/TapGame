@@ -1,8 +1,10 @@
-﻿namespace WhaleAppTapGame.Logic.Input
+﻿using UnityEngine;
+
+namespace WhaleAppTapGame.Logic.Input
 {
     public interface iInputManager
     {
-        event System.Action OnInputExecuted;
+        event System.Action<GameObject> OnInputExecuted;
 
         void UpdateComponent(float deltaTime);
     }

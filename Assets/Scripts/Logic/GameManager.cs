@@ -2,8 +2,8 @@
 using UnityEngine;
 using WhaleAppTapGame.Logic.Entities;
 using WhaleAppTapGame.Logic.Input;
-using WhaleAppTapGame.Logic.Movement;
 using WhaleAppTapGame.Logic.View;
+using WhaleAppTapGame.UI;
 
 namespace WhaleAppTapGame.Logic
 {
@@ -14,23 +14,22 @@ namespace WhaleAppTapGame.Logic
         private static GameManager m_Instance;
 
         public PrefabsLibrary PrefabsLibrary;
+        public UIManager UIManager;
 
         private UnitSpawnTimer m_UnitSpawnTimer;
         private iInputManager m_InputManager;
 
-        private DestroyableEntity m_PlayerEntity;
+        private iUnitEntity m_PlayerEntity;
         private List<UnitView> m_UnitViews;
+        private UnitFactory[] m_UnitFactories;
 
         private bool m_IsActive = false;
         private Vector2 m_ScreenBounds;
+        private int m_Score;
 
-        //TODO:
-        //Factory for units
-        //Gameover on destroy friendly unit
-        //Tap on units input
-        //UI player HP
-        //UI gameover
-        //UI play
+        private const int m_PLAYER_MAX_HP = 3;
+        private const int m_PLAYER_DAMAGE = 1;
+
 
         void Awake()
         {
@@ -72,12 +71,25 @@ namespace WhaleAppTapGame.Logic
 
             //Init list of enemies
             m_UnitViews = new List<UnitView>();
+
+            //Init factories
+            m_UnitFactories = new UnitFactory[]
+            {
+                new SimpleEnemyUnitFactory(PrefabsLibrary.UnitViewPrefab, m_ScreenBounds,  new Vector2(0.7f, 1.5f), 1, 1, UnitView_UnitOutOfBottomBoundHandler, UnitView_UnitDestroyedHandler),
+                new DiagonalEnemyUnitFactory(PrefabsLibrary.UnitViewPrefab, m_ScreenBounds, new Vector2(0.7f, 1.5f), 1, 1, 50, UnitView_UnitOutOfBottomBoundHandler, UnitView_UnitDestroyedHandler),
+                new FriendlyUnitFactory(PrefabsLibrary.UnitViewPrefab, m_ScreenBounds, new Vector2(0.7f, 1.5f), 1, 50, UnitView_UnitOutOfBottomBoundHandler, UnitView_FriendlyUnitDestroyedHandler)
+            };
+
+            //Init UI
+            UIManager.Init();
+            UIManager.PlayerHealthBarController.Init(m_PLAYER_MAX_HP);
         }
 
         void CreatePlayer()
         {
-            m_PlayerEntity = new DestroyableEntity(3, 1, Color.white);
+            m_PlayerEntity = new UnitEntity(m_PLAYER_MAX_HP, m_PLAYER_DAMAGE, Color.white);
             m_PlayerEntity.OnEntityDestroyed += PlayerEntity_EntityDestroyedHandler;
+            m_PlayerEntity.OnHPChanged += (int currentHP) => UIManager.PlayerHealthBarController.UpdateHealthBar(currentHP);
         }
 
         void StartMainLoop() => m_IsActive = true;
@@ -94,63 +106,67 @@ namespace WhaleAppTapGame.Logic
 
         void UnitSpawnTimer_UnitShouldBeSpawnedHandler()
         {
-            //Create entity
-            iDestroyableEntity enemyEntity = new DestroyableEntity(1, 1, Color.red);
-            iDestroyableEntity frindlyEntity = new FriendlyEntity(1, Color.green);
-            iDestroyableEntity entity = Random.Range(0, 100) > 50 ? enemyEntity : frindlyEntity;
-
-            //Create view
-            UnitView view = Instantiate(PrefabsLibrary.UnitViewPrefab) as UnitView;
-
-            float minSpawnPosX = -m_ScreenBounds.x - view.SpriteHalfWidth + 1;
-            float maxSpawnPosX = m_ScreenBounds.x + view.SpriteHalfWidth - 1;
-            float spawnPosX = Random.Range(minSpawnPosX, maxSpawnPosX);
-            float spawnPosY = m_ScreenBounds.y + view.SpriteHalfHeight;
-
-            view.transform.position = new Vector3(spawnPosX, spawnPosY, 0);
-
-            //Create movement
-            Vector2 viewSpriteBounds = new Vector2(view.SpriteHalfWidth, view.SpriteHalfHeight);
-            float randomSpeed = Random.Range(0.7f, 1.5f);
-            iMoveStrategy simpleMoveStrategy = new SimpleMoveStrategy(view.transform, randomSpeed, m_ScreenBounds, viewSpriteBounds);
-            iMoveStrategy diagonalMoveStrategy = new DiagonalMoveStrategy(view.transform, randomSpeed, m_ScreenBounds, viewSpriteBounds);
-            iMoveStrategy randomMoveStrategy = Random.Range(0, 100) >= 50 ? simpleMoveStrategy : diagonalMoveStrategy;
-
-            //Initialize view
-            view.OnUnitOutOfBottomBound += UnitView_UnitOutOfBottomBoundHandler;
-            view.OnUnitDestroyed += UnitView_UnitDestroyedHandler;
-            view.Init(entity, randomMoveStrategy);
+            UnitFactory randomUnitFactory = m_UnitFactories[Random.Range(0, m_UnitFactories.Length)];
+            UnitView unitView = randomUnitFactory.CreateUnit();
             
             //Add view to processing
-            m_UnitViews.Add(view);
+            m_UnitViews.Add(unitView);
         }
 
         void UnitView_UnitDestroyedHandler(UnitView unitView)
         {
-            Debug.Log("Unit was destroyed at: " + unitView.transform.position);
-            //TODO: Create explosion
-
-            RemoveUnitView(unitView);
+            RemoveUnitView_Explosion(unitView);
+            IncrementScore();
         }
 
-        void UnitView_UnitOutOfBottomBoundHandler(UnitView unitView) => m_PlayerEntity.TakeDamage(unitView.Damage);
+        void UnitView_FriendlyUnitDestroyedHandler(UnitView unitView)
+        {
+            RemoveUnitView_Explosion(unitView);
+            HandleGameOver();
+        }
 
-        void RemoveUnitView(UnitView unitView)
+        void UnitView_UnitOutOfBottomBoundHandler(UnitView unitView)
+        {
+            m_PlayerEntity.TakeDamage(unitView.Damage);
+            RemoveUnitView_Silent(unitView);
+        }
+
+
+        void RemoveUnitView_Explosion(UnitView unitView)
+        {
+            GameObject explosion = Instantiate(PrefabsLibrary.ExplosionPrefab, unitView.transform.position, Quaternion.identity);
+            Destroy(explosion, 2);
+
+            RemoveUnitView_Silent(unitView);
+        }
+
+        void RemoveUnitView_Silent(UnitView unitView)
         {
             m_UnitViews.Remove(unitView);
             Destroy(unitView.gameObject);
         }
 
 
-        void InputManager_InputExecutedHandler()
+        void InputManager_InputExecutedHandler(GameObject hitObject)
         {
-            m_UnitViews[0].TakeDamage(m_PlayerEntity.Damage);
+            UnitView hitUnitVIew = hitObject.GetComponent<UnitView>();
+            if (hitUnitVIew != null)
+                hitUnitVIew.TakeDamage(m_PlayerEntity.Damage);
         }
 
-        void PlayerEntity_EntityDestroyedHandler(iDestroyableEntity entity)
+        void PlayerEntity_EntityDestroyedHandler(iUnitEntity entity) => HandleGameOver();
+
+        void IncrementScore()
+        {
+            m_Score += 10;
+            UIManager.PlayerScoreController.UpdateScore(m_Score);
+        }
+
+        void HandleGameOver()
         {
             m_IsActive = false;
-            Debug.Log("Game over");
+            UIManager.ShowUIWindow_GameOver(m_Score);
         }
     }
 }
+
