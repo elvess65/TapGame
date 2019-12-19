@@ -17,14 +17,21 @@ namespace WhaleAppTapGame.Logic
         [Inject] private ScoreController m_ScoreController;
         [Inject] private iInputManager m_InputManager;
 
-        [Inject(Id = BindIDs.INJECT_ID_PlayerEntity)]
+        [Inject(Id = InjectIDs.PLAYER_ENTITY)]
         private iUnitEntity m_PlayerEntity;
 
-        private List<UnitView> m_UnitViews;
-        private UnitFactory[] m_UnitFactories;
+        [Inject(Id = InjectIDs.SIMPLE_UNIT_FACTORY)]
+        private UnitFactory m_SimpleEnemyFactory;
+
+        [Inject(Id = InjectIDs.DIAGONAL_UNIT_FACTORY)]
+        private UnitFactory m_DiagonalEnemyUnitFactory;
+
+        [Inject(Id = InjectIDs.FRIENDLY_UNITY_FACTORY)]
+        private UnitFactory m_FriendlyUnitFactory;
 
         private bool m_IsActive = false;
-        private Vector2 m_ScreenBounds;
+        private List<UnitView> m_UnitViews;
+        private UnitFactory[] m_UnitFactories;
 
 
         public void Initialize()
@@ -47,9 +54,6 @@ namespace WhaleAppTapGame.Logic
 
         void InitializeComponents()
         {
-            //Get screen bounds
-            m_ScreenBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
-
             //Init spawn timer
             m_UnitSpawnTimer.OnUnitShouldBeSpawned += UnitSpawnTimer_UnitShouldBeSpawnedHandler;
 
@@ -63,12 +67,16 @@ namespace WhaleAppTapGame.Logic
             m_UnitViews = new List<UnitView>();
 
             //Init factories
-            m_UnitFactories = new UnitFactory[]
-            {
-                new SimpleEnemyUnitFactory(m_PrefabsLibrary.UnitViewPrefab, m_ScreenBounds,  new Vector2(0.7f, 1.5f), 1, 1, UnitView_UnitOutOfBottomBoundHandler, UnitView_UnitDestroyedHandler),
-                new DiagonalEnemyUnitFactory(m_PrefabsLibrary.UnitViewPrefab, m_ScreenBounds, new Vector2(0.7f, 1.5f), 1, 1, 50, UnitView_UnitOutOfBottomBoundHandler, UnitView_UnitDestroyedHandler),
-                new FriendlyUnitFactory(m_PrefabsLibrary.UnitViewPrefab, m_ScreenBounds, new Vector2(0.7f, 1.5f), 1, 50, UnitView_UnitOutOfBottomBoundHandler, UnitView_FriendlyUnitDestroyedHandler)
-            };
+            m_SimpleEnemyFactory.OnUnitOutOfBottomBound += UnitView_UnitOutOfBottomBoundHandler;
+            m_SimpleEnemyFactory.OnUnitDestroyed += UnitView_UnitDestroyedHandler;
+
+            m_DiagonalEnemyUnitFactory.OnUnitOutOfBottomBound += UnitView_UnitOutOfBottomBoundHandler;
+            m_DiagonalEnemyUnitFactory.OnUnitDestroyed += UnitView_UnitDestroyedHandler;
+
+            m_FriendlyUnitFactory.OnUnitOutOfBottomBound += UnitView_UnitOutOfBottomBoundHandler;
+            m_FriendlyUnitFactory.OnUnitDestroyed += UnitView_FriendlyUnitDestroyedHandler;
+
+            m_UnitFactories = new UnitFactory[] { m_SimpleEnemyFactory, m_DiagonalEnemyUnitFactory, m_FriendlyUnitFactory };
 
             //Init player
             m_PlayerEntity.OnEntityDestroyed += PlayerEntity_EntityDestroyedHandler;
