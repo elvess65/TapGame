@@ -1,5 +1,6 @@
 using UnityEngine;
 using WhaleAppTapGame.Logic;
+using WhaleAppTapGame.Logic.Effects;
 using WhaleAppTapGame.Logic.Entities;
 using WhaleAppTapGame.Logic.Input;
 using WhaleAppTapGame.UI;
@@ -12,6 +13,7 @@ namespace WhaleAppTapGame.DI
         [Header("MonoObjects")]
         public PrefabsLibrary PrefabsLibrary;
         public UIManager UIManager;
+        public CameraShakeEffect CameraShakeEffect;
 
         [Header("Settings")]
         public Settings.UnitEntitySettings PlayerEntity_Settings;
@@ -28,6 +30,7 @@ namespace WhaleAppTapGame.DI
             //Bind instances
             Container.BindInstance(PrefabsLibrary).AsSingle();
             Container.BindInstance(UIManager).AsSingle();
+            Container.BindInstance(CameraShakeEffect).AsSingle();
 
             //Bind classes
             Container.BindInterfacesAndSelfTo<GameManager>().AsSingle();

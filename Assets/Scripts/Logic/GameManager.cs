@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using WhaleAppTapGame.DI;
+using WhaleAppTapGame.Logic.Effects;
 using WhaleAppTapGame.Logic.Entities;
 using WhaleAppTapGame.Logic.Input;
 using WhaleAppTapGame.Logic.View;
@@ -15,6 +16,7 @@ namespace WhaleAppTapGame.Logic
         [Inject] private PrefabsLibrary m_PrefabsLibrary;
         [Inject] private UnitSpawnTimer m_UnitSpawnTimer;
         [Inject] private ScoreController m_ScoreController;
+        [Inject] private CameraShakeEffect m_CameraShakeEffect;
         [Inject] private iInputManager m_InputManager;
 
         [Inject(Id = InjectIDs.PLAYER_ENTITY)]
@@ -67,20 +69,24 @@ namespace WhaleAppTapGame.Logic
             m_UnitViews = new List<UnitView>();
 
             //Init factories
-            m_SimpleEnemyFactory.OnUnitOutOfBottomBound += UnitView_UnitOutOfBottomBoundHandler;
-            m_SimpleEnemyFactory.OnUnitDestroyed += UnitView_UnitDestroyedHandler;
+            m_SimpleEnemyFactory.OnUnitOutOfBottomBound += UnitView_EnemyUnit_OutOfBottomBoundHandler;
+            m_SimpleEnemyFactory.OnUnitDestroyed += UnitView_EnemyUnit_DestroyedHandler;
 
-            m_DiagonalEnemyUnitFactory.OnUnitOutOfBottomBound += UnitView_UnitOutOfBottomBoundHandler;
-            m_DiagonalEnemyUnitFactory.OnUnitDestroyed += UnitView_UnitDestroyedHandler;
+            m_DiagonalEnemyUnitFactory.OnUnitOutOfBottomBound += UnitView_EnemyUnit_OutOfBottomBoundHandler;
+            m_DiagonalEnemyUnitFactory.OnUnitDestroyed += UnitView_EnemyUnit_DestroyedHandler;
 
-            m_FriendlyUnitFactory.OnUnitOutOfBottomBound += UnitView_UnitOutOfBottomBoundHandler;
-            m_FriendlyUnitFactory.OnUnitDestroyed += UnitView_FriendlyUnitDestroyedHandler;
+            m_FriendlyUnitFactory.OnUnitOutOfBottomBound += UnitView_FriendlyUnit_OutOfBottomBoundHandler;
+            m_FriendlyUnitFactory.OnUnitDestroyed += UnitView_FriendlyUnit_DestroyedHandler;
 
             m_UnitFactories = new UnitFactory[] { m_SimpleEnemyFactory, m_DiagonalEnemyUnitFactory, m_FriendlyUnitFactory };
 
             //Init player
             m_PlayerEntity.OnEntityDestroyed += PlayerEntity_EntityDestroyedHandler;
-            m_PlayerEntity.OnHPChanged += (int currentHP) => m_UIManager.PlayerHealthBarController.UpdateHealthBar(currentHP);
+            m_PlayerEntity.OnHPChanged += (int currentHP) =>
+            {
+                m_CameraShakeEffect.TriggerShake();
+                m_UIManager.PlayerHealthBarController.UpdateHealthBar(currentHP);
+            };
 
             //Init UI
             m_UIManager.Init();
@@ -108,22 +114,25 @@ namespace WhaleAppTapGame.Logic
             m_UnitViews.Add(randomUnitFactory.CreateUnit());
         }
 
-        void UnitView_UnitDestroyedHandler(UnitView unitView)
+
+        void UnitView_EnemyUnit_OutOfBottomBoundHandler(UnitView unitView)
+        {
+            m_PlayerEntity.TakeDamage(unitView.Damage);
+            RemoveUnitView_Silent(unitView);
+        }
+
+        void UnitView_EnemyUnit_DestroyedHandler(UnitView unitView)
         {
             RemoveUnitView_Explosion(unitView);
             m_ScoreController.IncrementScore();
         }
 
-        void UnitView_FriendlyUnitDestroyedHandler(UnitView unitView)
+        void UnitView_FriendlyUnit_OutOfBottomBoundHandler(UnitView unitView) => RemoveUnitView_Silent(unitView);
+
+        void UnitView_FriendlyUnit_DestroyedHandler(UnitView unitView)
         {
             RemoveUnitView_Explosion(unitView);
             HandleGameOver();
-        }
-
-        void UnitView_UnitOutOfBottomBoundHandler(UnitView unitView)
-        {
-            m_PlayerEntity.TakeDamage(unitView.Damage);
-            RemoveUnitView_Silent(unitView);
         }
 
 
