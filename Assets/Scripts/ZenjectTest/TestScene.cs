@@ -6,7 +6,7 @@ using Zenject;
 public class TestScene : MonoBehaviour
 {
     [Inject]
-    GameManager gm;
+    GameManager_Test gm;
 
     void Start()
     {

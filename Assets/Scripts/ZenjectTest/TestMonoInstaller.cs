@@ -4,22 +4,22 @@ using Zenject;
 
 public class TestMonoInstaller : MonoInstaller
 {
-    public GameManager.PlayerSettings PlayerSettings;
-    public GameManager.SpawnSettings SpawnSettings;
+    public GameManager_Test.PlayerSettings PlayerSettings;
+    public GameManager_Test.SpawnSettings SpawnSettings;
     public int Delay;
     public TestParamsLibrary ParamsLibrary;
 
     public override void InstallBindings()
     {
         Container.BindInstance(ParamsLibrary).AsSingle();
-        Container.BindInterfacesAndSelfTo<GameManager>().AsSingle().WithArguments(PlayerSettings, SpawnSettings, Delay);
+        Container.BindInterfacesAndSelfTo<GameManager_Test>().AsSingle().WithArguments(PlayerSettings, SpawnSettings, Delay);
         Container.Bind<MessageFactory>().WithId("Simple").To<SimpleMessageFactory>().AsTransient().WithArguments(0);
         Container.Bind<MessageFactory>().WithId("Complex").To<ComplexMessageFacotry>().AsTransient().WithArguments(1, 0.5f);
     }
 }
 
 
-public class GameManager : ITickable, IInitializable
+public class GameManager_Test : ITickable, IInitializable
 {
     readonly PlayerSettings _playerSettings;
     readonly SpawnSettings _spawnSettings;
@@ -36,7 +36,7 @@ public class GameManager : ITickable, IInitializable
 
     private MessageFactory[] _factoryList;
 
-    public GameManager(PlayerSettings playerSettings, SpawnSettings spawnSettings, int delay)
+    public GameManager_Test(PlayerSettings playerSettings, SpawnSettings spawnSettings, int delay)
     {
         Debug.Log("Create game manager");
 
