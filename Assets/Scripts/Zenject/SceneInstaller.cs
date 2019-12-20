@@ -41,24 +41,22 @@ namespace WhaleAppTapGame.DI
                 To<UnitEntity>().AsTransient().WithArguments(PlayerEntity_Settings.HP_Damage.x, PlayerEntity_Settings.HP_Damage.y, PlayerEntity_Settings.HightlightColor);
 
             //Bind factories
-            Vector2 screenBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
-
             Container.Bind<UnitFactory>().WithId(InjectIDs.SIMPLE_UNIT_FACTORY).To<SimpleEnemyUnitFactory>().AsSingle().
-                WithArguments(PrefabsLibrary.UnitViewPrefab, screenBounds, SimpleEnemy_UnitEntity_Settings.SpeedRange,
-                                                                           SimpleEnemy_UnitEntity_Settings.HightlightColor,
-                                                                           SimpleEnemy_UnitEntity_Settings.HP_Damage);
+                WithArguments(PrefabsLibrary.UnitViewPrefab, SimpleEnemy_UnitEntity_Settings.SpeedRange,
+                                                             SimpleEnemy_UnitEntity_Settings.HightlightColor,
+                                                             SimpleEnemy_UnitEntity_Settings.HP_Damage);
 
             Container.Bind<UnitFactory>().WithId(InjectIDs.DIAGONAL_UNIT_FACTORY).To<DiagonalEnemyUnitFactory>().AsSingle().
-                WithArguments(PrefabsLibrary.UnitViewPrefab, screenBounds, DiagonalEnemy_UnitEntity_Settings.SpeedRange,
-                                                                           DiagonalEnemy_UnitEntity_Settings.HightlightColor,
-                                                                           DiagonalEnemy_UnitEntity_Settings.HP_Damage, 
-                                                                           DiagonalEnemy_UnitEntity_Settings.ChanceToMoveDiagonal);
+                WithArguments(PrefabsLibrary.UnitViewPrefab, DiagonalEnemy_UnitEntity_Settings.SpeedRange,
+                                                             DiagonalEnemy_UnitEntity_Settings.HightlightColor,
+                                                             DiagonalEnemy_UnitEntity_Settings.HP_Damage, 
+                                                             DiagonalEnemy_UnitEntity_Settings.ChanceToMoveDiagonal);
 
             Container.Bind<UnitFactory>().WithId(InjectIDs.FRIENDLY_UNITY_FACTORY).To<FriendlyUnitFactory>().AsSingle().
-                WithArguments(PrefabsLibrary.UnitViewPrefab, screenBounds, Friendly_UnitEntity_Settings.SpeedRange,
-                                                                           Friendly_UnitEntity_Settings.HightlightColor,
-                                                                           Friendly_UnitEntity_Settings.HP_Damage, 
-                                                                           Friendly_UnitEntity_Settings.ChanceToMoveDiagonal);
+                WithArguments(PrefabsLibrary.UnitViewPrefab, Friendly_UnitEntity_Settings.SpeedRange,
+                                                             Friendly_UnitEntity_Settings.HightlightColor,
+                                                             Friendly_UnitEntity_Settings.HP_Damage, 
+                                                             Friendly_UnitEntity_Settings.ChanceToMoveDiagonal);
         }
     }
 }
